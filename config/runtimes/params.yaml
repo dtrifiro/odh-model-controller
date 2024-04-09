@@ -1,4 +1,0 @@
-varReference:
-  - path: objects[]/spec/containers[]/image
-    kind: Template
-    apiVersion: apps/v1

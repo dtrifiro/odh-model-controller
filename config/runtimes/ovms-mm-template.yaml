@@ -37,7 +37,7 @@ objects:
             - '--file_system_poll_wait_seconds=0'
             - '--grpc_bind_address=127.0.0.1'
             - '--rest_bind_address=127.0.0.1'
-          image: ${ovms-image}
+          image: $(ovms-image)
           name: ovms
           resources:
             limits:
