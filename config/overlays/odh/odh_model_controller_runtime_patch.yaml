@@ -1,9 +1,0 @@
-apiVersion: apps/v1
-kind: Template
-metadata:
-  name: caikit-tgis-serving-template
-objects:
-  spec:
-    containers:
-        image: $(caikit-tgis-image) 
-        name: kserve-container
