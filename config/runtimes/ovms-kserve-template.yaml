@@ -48,7 +48,7 @@ objects:
         - grpc-v2
       containers:
         - name: kserve-container
-          image: ${ovms-image}
+          image: $(ovms-image)
           args:
             - '--model_name={{.Name}}'
             - '--port=8001'

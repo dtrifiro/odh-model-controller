@@ -40,7 +40,7 @@ objects:
             - name: TRANSFORMERS_CACHE
               value: /tmp/transformers_cache
         - name: transformer-container
-          image: ${caikit-tgis-image}
+          image: $(caikit-tgis-image)
           env:
             - name: RUNTIME_LOCAL_MODELS_DIR
               value: /mnt/models

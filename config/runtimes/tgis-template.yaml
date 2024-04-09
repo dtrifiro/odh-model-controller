@@ -31,7 +31,7 @@ objects:
           name: pytorch
       containers:
         - name: kserve-container
-          image: ${tgis-image}
+          image: $(tgis-image)
           command: ['text-generation-launcher']
           args:
             - '--model-name=/mnt/models/'
