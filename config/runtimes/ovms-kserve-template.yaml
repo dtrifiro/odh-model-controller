@@ -25,6 +25,7 @@ objects:
       annotations:
         prometheus.kserve.io/port: '8888'
         prometheus.kserve.io/path: /metrics
+        prometheus.kserve.io/scrape: "true"
       supportedModelFormats:
         - name: openvino_ir
           version: opset13
@@ -55,8 +56,8 @@ objects:
             - '--rest_port=8888'
             - '--model_path=/mnt/models'
             - '--file_system_poll_wait_seconds=0'
-            - '--grpc_bind_address=127.0.0.1'
-            - '--rest_bind_address=127.0.0.1'
+            - '--grpc_bind_address=0.0.0.0'
+            - '--rest_bind_address=0.0.0.0'
             - '--target_device=AUTO'
             - '--metrics_enable'
           ports:
