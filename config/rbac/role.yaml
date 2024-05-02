@@ -54,6 +54,14 @@ rules:
   - list
   - watch
 - apiGroups:
+  - dscinitialization.opendatahub.io
+  resources:
+  - dscinitializations
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
   - extensions
   resources:
   - ingresses
@@ -197,6 +205,13 @@ rules:
   - routes/custom-host
   verbs:
   - create
+- apiGroups:
+  - security.istio.io
+  resources:
+  - authorizationpolicies
+  verbs:
+  - get
+  - list
 - apiGroups:
   - security.istio.io
   resources:

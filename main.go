@@ -22,14 +22,19 @@ import (
 	"os"
 	"strconv"
 
-	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
+	authorinov1beta2 "github.com/kuadrant/authorino/api/v1beta2"
+
 	// to ensure that exec-entrypoint and run can make use of them.
+	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 
+	"istio.io/client-go/pkg/apis/security/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
+	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	knservingv1 "knative.dev/serving/pkg/apis/serving/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
@@ -57,6 +62,7 @@ func init() { //nolint:gochecknoinits //reason this way we ensure schemes are al
 // +kubebuilder:rbac:groups=networking.istio.io,resources=virtualservices,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=networking.istio.io,resources=virtualservices/finalizers,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=security.istio.io,resources=peerauthentications,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=security.istio.io,resources=authorizationpolicies,verbs=get;list
 // +kubebuilder:rbac:groups=telemetry.istio.io,resources=telemetries,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=maistra.io,resources=servicemeshmembers,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=maistra.io,resources=servicemeshmembers/finalizers,verbs=get;list;watch;create;update;patch;delete
@@ -73,6 +79,7 @@ func init() { //nolint:gochecknoinits //reason this way we ensure schemes are al
 // +kubebuilder:rbac:groups="",resources=secrets;configmaps;serviceaccounts,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=authorino.kuadrant.io,resources=authconfigs,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=datasciencecluster.opendatahub.io,resources=datascienceclusters,verbs=get;list;watch
+// +kubebuilder:rbac:groups=dscinitialization.opendatahub.io,resources=dscinitializations,verbs=get;list;watch
 
 func getEnvAsBool(name string, defaultValue bool) bool {
 	valStr := os.Getenv(name)
@@ -114,6 +121,7 @@ func main() {
 		HealthProbeBindAddress: probeAddr,
 		LeaderElection:         enableLeaderElection,
 		LeaderElectionID:       "odh-model-controller",
+		ClientDisableCacheFor:  []client.Object{&v1beta1.AuthorizationPolicy{}},
 	})
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")
@@ -123,7 +131,6 @@ func main() {
 	//Setup InferenceService controller
 	if err = (controllers.NewOpenshiftInferenceServiceReconciler(
 		mgr.GetClient(),
-		mgr.GetScheme(),
 		ctrl.Log.WithName("controllers").WithName("InferenceService"),
 		getEnvAsBool("MESH_DISABLED", false))).
 		SetupWithManager(mgr); err != nil {
@@ -133,7 +140,6 @@ func main() {
 	if err = (&controllers.StorageSecretReconciler{
 		Client: mgr.GetClient(),
 		Log:    ctrl.Log.WithName("controllers").WithName("StorageSecret"),
-		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "StorageSecret")
 		os.Exit(1)
@@ -142,7 +148,6 @@ func main() {
 	if err = (&controllers.KServeCustomCACertReconciler{
 		Client: mgr.GetClient(),
 		Log:    ctrl.Log.WithName("controllers").WithName("KServeCustomeCABundleConfigMap"),
-		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "KServeCustomeCABundleConfigMap")
 		os.Exit(1)
@@ -153,7 +158,6 @@ func main() {
 		if err = (&controllers.MonitoringReconciler{
 			Client:       mgr.GetClient(),
 			Log:          ctrl.Log.WithName("controllers").WithName("MonitoringReconciler"),
-			Scheme:       mgr.GetScheme(),
 			MonitoringNS: monitoringNS,
 		}).SetupWithManager(mgr); err != nil {
 			setupLog.Error(err, "unable to create controller", "controller", "MonitoringReconciler")
@@ -165,7 +169,6 @@ func main() {
 		setupLog.Info("Model registry inference service reconciliation enabled..")
 		if err = (controllers.NewModelRegistryInferenceServiceReconciler(
 			mgr.GetClient(),
-			mgr.GetScheme(),
 			ctrl.Log.WithName("controllers").WithName("ModelRegistryInferenceService"),
 		)).SetupWithManager(mgr); err != nil {
 			setupLog.Error(err, "unable to create controller", "controller", "ModelRegistryInferenceServiceReconciler")
@@ -176,7 +179,7 @@ func main() {
 			"reconciliation for InferenceService, please provide --model-registry-inference-reconcile flag.")
 	}
 
-	kserveWithMeshEnabled, kserveWithMeshEnabledErr := utils.VerifyIfComponentIsEnabled(context.Background(), mgr.GetClient(), utils.KserveAuthorinoComponent)
+	kserveWithMeshEnabled, kserveWithMeshEnabledErr := utils.VerifyIfComponentIsEnabled(context.Background(), mgr.GetClient(), utils.KServeWithServiceMeshComponent)
 	if kserveWithMeshEnabledErr != nil {
 		setupLog.Error(kserveWithMeshEnabledErr, "could not determine if kserve have service mesh enabled")
 	}
@@ -192,6 +195,17 @@ func main() {
 		}
 	} else {
 		setupLog.Info("Skipping setup of Knative Service validating Webhook, because KServe Serverless setup seems to be disabled in the DataScienceCluster resource.")
+	}
+
+	authorinoEnabled, capabilityErr := utils.VerifyIfMeshAuthorizationIsEnabled(context.Background(), mgr.GetClient())
+	if capabilityErr != nil {
+		setupLog.Error(capabilityErr, "unable to determine if Authorino is enabled")
+		os.Exit(1)
+	}
+	if kserveWithMeshEnabled && authorinoEnabled {
+		utilruntime.Must(authorinov1beta2.SchemeBuilder.AddToScheme(scheme))
+	} else {
+		setupLog.Info("Authorino is not enabled, skipping handling")
 	}
 
 	//+kubebuilder:scaffold:builder
