@@ -28,7 +28,6 @@ objects:
       annotations:
         prometheus.kserve.io/port: '3000'
         prometheus.kserve.io/path: /metrics
-        prometheus.kserve.io/scrape: "true"
       multiModel: false
       supportedModelFormats:
         - autoSelect: true
