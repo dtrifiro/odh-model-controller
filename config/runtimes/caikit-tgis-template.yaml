@@ -53,8 +53,6 @@ objects:
               value: 'false'
             - name: RUNTIME_HTTP_ENABLED
               value: 'true'
-            - name: RUNTIME_GRPC_SERVER_THREAD_POOL_SIZE
-              value: '64'
           ports:
             - containerPort: 8080
               protocol: TCP
