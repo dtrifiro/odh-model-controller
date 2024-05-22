@@ -35,6 +35,13 @@ vars:
       kind: ConfigMap
       name: odh-model-controller-parameters
   - fieldref:
+      fieldPath: data.vllm-image
+    name: vllm-image
+    objref:
+      apiVersion: v1
+      kind: ConfigMap
+      name: odh-model-controller-parameters
+  - fieldref:
       fieldPath: metadata.namespace
     name: mesh-namespace
     objref:
