@@ -43,24 +43,23 @@ objects:
             - name: HF_HOME
               value: /tmp/hf_home
           readinessProbe:
-            httpGet: 
+            httpGet:
               port: 8080
               path: /health
-            periodSeconds: 30
-            timeoutSeconds: 5
+            initialDelaySeconds: ${{PROBES_INITIAL_DELAY_SECONDS}}
           livenessProbe:
-            httpGet: 
+            httpGet:
               port: 8080
               path: /health
-            periodSeconds: 100
-            timeoutSeconds: 8
           startupProbe:
             httpGet:
               port: 8080
               path: /health
-            # Allow 12 mins to start
-            failureThreshold: 24
-            periodSeconds: 30
+            initialDelaySeconds: ${{PROBES_INITIAL_DELAY_SECONDS}}
           ports:
             - containerPort: 8080
               protocol: TCP
+parameters:
+  - name: PROBES_INITIAL_DELAY_SECONDS
+    description: Amount of time to wait before probing the container for readiness
+    value: "5"
