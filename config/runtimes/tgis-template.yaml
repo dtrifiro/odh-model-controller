@@ -59,3 +59,7 @@ objects:
             - containerPort: 8033
               name: h2c
               protocol: TCP
+parameters:
+  - name: PROBES_INITIAL_DELAY_SECONDS
+    description: Amount of time to wait before probing the container for readiness
+    value: "5"
