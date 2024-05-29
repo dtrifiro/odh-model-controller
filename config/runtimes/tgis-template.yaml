@@ -48,19 +48,14 @@ objects:
               command:
                 - curl
                 - localhost:3000/health
-            initialDelaySeconds: $(PROBES_INITIAL_DELAY_SECONDS)
+            initialDelaySeconds: 5
           livenessProbe:
             exec:
               command:
                 - curl
                 - localhost:3000/health
-            initialDelaySeconds: $(PROBES_INITIAL_DELAY_SECONDS)
+            initialDelaySeconds: 5
           ports:
             - containerPort: 8033
               name: h2c
               protocol: TCP
-parameters:
-  - name: PROBES_INITIAL_DELAY_SECONDS
-    description: Amount of time to wait before probing the container for readiness
-    type: number
-    value: 5

@@ -42,8 +42,6 @@ objects:
           env:
             - name: HF_HUB_CACHE
               value: /tmp
-            - name: TRANSFORMERS_CACHE
-              value: $(HF_HUB_CACHE)
           readinessProbe:
             httpGet: 
               port: 8080

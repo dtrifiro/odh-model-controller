@@ -63,7 +63,7 @@ objects:
                 - -m
                 - caikit_health_probe
                 - readiness
-            initialDelaySeconds: $(PROBES_INITIAL_DELAY_SECONDS)
+            initialDelaySeconds: 5
           livenessProbe:
             exec:
               command:
@@ -71,9 +71,4 @@ objects:
                 - -m
                 - caikit_health_probe
                 - liveness
-            initialDelaySeconds: $(PROBES_INITIAL_DELAY_SECONDS)
-parameters:
-  - name: PROBES_INITIAL_DELAY_SECONDS
-    description: Amount of time to wait before probing the container for readiness
-    type: number
-    value: 5
+            initialDelaySeconds: 5
