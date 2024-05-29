@@ -41,8 +41,8 @@ objects:
             - '--port=3000'
             - '--grpc-port=8033'
           env:
-            - name: TRANSFORMERS_CACHE
-              value: /tmp/transformers_cache
+            - name: HF_HOME
+              value: /tmp/hf_home
           readinessProbe:
             exec:
               command:
