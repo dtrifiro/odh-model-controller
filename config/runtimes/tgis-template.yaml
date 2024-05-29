@@ -48,13 +48,13 @@ objects:
               command:
                 - curl
                 - localhost:3000/health
-            initialDelaySeconds: ${PROBES_INITIAL_DELAY_SECONDS}
+            initialDelaySeconds: $(PROBES_INITIAL_DELAY_SECONDS)
           livenessProbe:
             exec:
               command:
                 - curl
                 - localhost:3000/health
-            initialDelaySeconds: ${PROBES_INITIAL_DELAY_SECONDS}
+            initialDelaySeconds: $(PROBES_INITIAL_DELAY_SECONDS)
           ports:
             - containerPort: 8033
               name: h2c
