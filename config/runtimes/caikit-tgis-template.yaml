@@ -34,7 +34,7 @@ objects:
           name: caikit
       containers:
         - name: kserve-container
-          image: text-generation-inference
+          image: $(tgis-image)
           command:
             - text-generation-launcher
           args:
