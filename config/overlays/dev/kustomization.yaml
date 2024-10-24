@@ -9,6 +9,8 @@ namespace: default
 configMapGenerator:
 - envs:
   - params.env
+  - params-vllm-rocm.env
+  - params-vllm-gaudi.env
   name: odh-model-controller-parameters
 generatorOptions:
   disableNameSuffixHash: true
